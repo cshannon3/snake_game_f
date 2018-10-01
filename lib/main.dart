@@ -28,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Size boardsize = Size(300.0,510.0);
+  final Size boardsize = Size(350.0,550.0);
   final double piecesize = 30.0;
 
 
@@ -76,6 +76,10 @@ class _GameBoardState extends State<GameBoard> {
   bool turn = false;
   int taillength = 0;
   List<int> taillocations = [];
+  double verticalpadding;
+  double horizontalpadding;
+  int rows, columns, spots;
+  double piecesize;
 
 
   @override
@@ -83,9 +87,17 @@ class _GameBoardState extends State<GameBoard> {
     super.initState();
     snakeheadlocation = 0;
     random = Random();
-    foodlocation = random.nextInt(150);
-  }
 
+    piecesize = widget.piecesize;
+    verticalpadding = (widget.boardsize.height%widget.piecesize)/2;
+    horizontalpadding = (widget.boardsize.width%widget.piecesize)/2;
+    rows = (widget.boardsize.height/widget.piecesize).floor();
+    columns =(widget.boardsize.width/widget.piecesize).floor();
+    print("rows $rows and columns $columns");
+    spots = rows * columns;
+
+    foodlocation = random.nextInt(spots);
+  }
   @override
   void dispose() {
     timer?.cancel();
@@ -116,28 +128,34 @@ class _GameBoardState extends State<GameBoard> {
     );
   }
 
+  double getY(int _location){
+    return ((_location / columns).floor() * piecesize);
+  }
+
+  double getX(int _location){
+    return (_location % columns) * piecesize;
+  }
   Widget game() {
     return Stack(
       children: <Widget>[
         Positioned(
-          top: ((snakeheadlocation / 10).floor()) * 30.0,
-          left: snakeheadlocation % 10 * 30.0, //snakeHeadX*30.0,
+          top: getY(snakeheadlocation),
+          left: getX(snakeheadlocation) ,
           child: Container(
-            height: 30.0,
-            width: 30.0,
+            height: piecesize,
+            width: piecesize,
             decoration: BoxDecoration(
                 color: Colors.blue,
                 shape: BoxShape.circle
             ),
           ),
         ),
-
         Positioned(
-          top: ((foodlocation / 10).floor()) * 30.0, //foodY*30.0,
-          left: foodlocation % 10 * 30.0,
+          top: getY(foodlocation),
+          left: getX(foodlocation),
           child: Container(
-            height: 30.0,
-            width: 30.0,
+            height: piecesize,
+            width: piecesize,
             decoration: BoxDecoration(
                 color: Colors.red,
                 shape: BoxShape.circle
@@ -153,10 +171,10 @@ class _GameBoardState extends State<GameBoard> {
               setState(() {
                 switch (directionlist[index]) {
                   case SnakeDirection.down:
-                    taillocation -= 10;
+                    taillocation -= columns;
                     break;
                   case SnakeDirection.up:
-                    taillocation += 10;
+                    taillocation += columns;
                     break;
                   case SnakeDirection.right:
                     taillocation -= 1;
@@ -168,11 +186,11 @@ class _GameBoardState extends State<GameBoard> {
                 taillocations[index] = taillocation;
               });
               return Positioned(
-                  top: ((taillocation / 10).floor()) * 30.0,
-                  left: taillocation % 10 * 30.0,
+                  top: getY(taillocation),
+                  left: getX(taillocation),
                   child: Container(
-                    height: 30.0,
-                    width: 30.0,
+                    height: piecesize,
+                    width: piecesize,
                     decoration: BoxDecoration(
                         color: Colors.blue,
                         shape: BoxShape.circle
@@ -198,6 +216,7 @@ class _GameBoardState extends State<GameBoard> {
       snakeDirection = SnakeDirection.down;
       taillocation = 0;
       snakeheadlocation = 0;
+      taillocations.clear();
     });
 
     timer?.cancel(); // cancel old timer if it exists
@@ -206,22 +225,22 @@ class _GameBoardState extends State<GameBoard> {
         directionlist.insert(0, snakeDirection);
         switch (snakeDirection) {
           case SnakeDirection.down:
-            (snakeheadlocation / 10.floor() < 15)
-                ? snakeheadlocation += 10
+            ((snakeheadlocation / columns).floor() < rows-1)
+                ? snakeheadlocation += columns
                 : gameOver();
             break;
           case SnakeDirection.up:
-            (snakeheadlocation / 10.floor() > 0)
-                ? snakeheadlocation -= 10
+            ((snakeheadlocation / columns).floor() > 0)
+                ? snakeheadlocation -= columns
                 : gameOver();
             break;
           case SnakeDirection.right:
-            (snakeheadlocation % 10 != 9)
+            (snakeheadlocation % columns != columns-1)
                 ? snakeheadlocation += 1
                 : gameOver();
             break;
           case SnakeDirection.left:
-            (snakeheadlocation % 10 != 0)
+            (snakeheadlocation %columns != 0)
                 ? snakeheadlocation -= 1
                 : gameOver();
         }
@@ -230,11 +249,11 @@ class _GameBoardState extends State<GameBoard> {
             : turn = false;
       });
       if (snakeheadlocation == foodlocation) {
-        foodlocation = random.nextInt(150);
+        foodlocation = random.nextInt(spots);
         taillocations.add(snakeheadlocation);
         taillength += 1;
         while (taillocations.contains(foodlocation)) {
-          foodlocation = random.nextInt(150);
+          foodlocation = random.nextInt(spots);
         }
       }
     });
@@ -245,7 +264,6 @@ class _GameBoardState extends State<GameBoard> {
     final RenderBox referenceBox = context.findRenderObject();
     setState(() {
       _tapPosition = referenceBox.globalToLocal(details.globalPosition);
-      print(_tapPosition);
     });
     switch (gameState) {
       case GameState.startscreen:
@@ -270,10 +288,10 @@ class _GameBoardState extends State<GameBoard> {
       turn = true;
       (snakeDirection == SnakeDirection.down ||
           snakeDirection == SnakeDirection.up)
-          ? (_tapPosition.dx > (snakeheadlocation % 10) * 30)
+          ? (_tapPosition.dx > getX(snakeheadlocation))
           ? snakeDirection = SnakeDirection.right
           : snakeDirection = SnakeDirection.left
-          : (_tapPosition.dy > (snakeheadlocation / 10.floor()) * 30)
+          : (_tapPosition.dy > getY(snakeheadlocation))
           ? snakeDirection = SnakeDirection.down
           : snakeDirection = SnakeDirection.up;
     });
@@ -284,25 +302,24 @@ class _GameBoardState extends State<GameBoard> {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTapDown: _onTapDown,
-        onTap: () {
-          print("hi");
-        },
         child:
         ConstrainedBox(
-          constraints: BoxConstraints.tight(
-              Size(widget.boardwidth, widget.boardheight)),
+          constraints: BoxConstraints.tight(widget.boardsize),
           child:
           Container(
-            color: Colors.white,
-            child:
-            (gameState == GameState.active)
-                ? game()
-                : (gameState == GameState.startscreen)
-                ? startText()
-                : gameoverText(),
+            color: Colors.grey[400],
+            padding: EdgeInsets.symmetric(vertical: verticalpadding, horizontal: horizontalpadding),
+            child: Container(
+              color: Colors.white,
+              child:
+              (gameState == GameState.active)
+                  ? game()
+                  : (gameState == GameState.startscreen)
+                  ? startText()
+                  : gameoverText(),
+            ),
           ),
-
-        )
+        ),
     );
   }
 }

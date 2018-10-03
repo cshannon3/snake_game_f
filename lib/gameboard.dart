@@ -23,7 +23,7 @@ class _GameBoardState extends State<GameBoard> {
   double horizontalpadding;
   int rows, columns, spots;
   double piecesize;
-  Widget currentScreen;
+  //Widget currentScreen;
 
 
   @override
@@ -40,20 +40,6 @@ class _GameBoardState extends State<GameBoard> {
   void onChangeGameState(GameState _gamestate) {
     gameState = _gamestate;
     setState(() {
-     // timer?.cancel();
-
-      /*switch (gameState) {
-        case GameState.startscreen:
-            currentScreen = StartScreen(onChangeGameState: onChangeGameState,);
-          break;
-        case GameState.active:
-          currentScreen = Game(rows: rows,columns: columns,piecesize: piecesize,onChangeGameState: onChangeGameState);
-          break;
-        case GameState.gameover:
-          currentScreen = GameOverScreen(onChangeGameState: onChangeGameState,);
-          break;
-      }*/
-
 
     });
   }

@@ -30,10 +30,12 @@ class _GameState extends State<Game> {
   SnakeDirection snakeDirection;
   bool turn = false;
 
-  double verticalpadding, horizontalpadding;
+ // double verticalpadding, horizontalpadding;
 
   int rows, columns, spots;
   double piecesize;
+  int millisecondsPerMovement = 500;
+
 
 
   @override
@@ -53,8 +55,9 @@ class _GameState extends State<Game> {
       taillocations?.clear();
       foodlocation = random.nextInt(spots);
     });
+    setSpeed();
 
-    timer?.cancel(); // cancel old timer if it exists
+    /*timer?.cancel(); // cancel old timer if it exists
     timer = Timer.periodic(Duration(milliseconds: 500), (Timer timer) {
       setState(() {
         directionlist.insert(0, snakeDirection);
@@ -91,13 +94,57 @@ class _GameState extends State<Game> {
           foodlocation = random.nextInt(spots);
         }
       }
-    });
+    });*/
   }
 
   @override
   void dispose() {
     timer?.cancel();
     super.dispose();
+  }
+
+  setSpeed() {
+    timer?.cancel(); // cancel old timer if it exists
+    timer = Timer.periodic(Duration(milliseconds: millisecondsPerMovement), (Timer timer) {
+      setState(() {
+        directionlist.insert(0, snakeDirection);
+        switch (snakeDirection) {
+          case SnakeDirection.down:
+            ((snakeheadlocation / columns).floor() < rows - 1)
+                ? snakeheadlocation += columns
+                : widget.onChangeGameState(GameState.gameover);
+            break;
+          case SnakeDirection.up:
+            ((snakeheadlocation / columns).floor() > 0)
+                ? snakeheadlocation -= columns
+                : widget.onChangeGameState(GameState.gameover);
+            break;
+          case SnakeDirection.right:
+            (snakeheadlocation % columns != columns - 1)
+                ? snakeheadlocation += 1
+                : widget.onChangeGameState(GameState.gameover);
+            break;
+          case SnakeDirection.left:
+            (snakeheadlocation % columns != 0)
+                ? snakeheadlocation -= 1
+                : widget.onChangeGameState(GameState.gameover);
+        }
+        (taillocations.isNotEmpty && taillocations.contains(snakeheadlocation))
+            ? widget.onChangeGameState(GameState.gameover)
+            : turn = false;
+      });
+      if (snakeheadlocation == foodlocation) {
+        foodlocation = random.nextInt(spots);
+        taillocations.add(snakeheadlocation);
+        taillength += 1;
+
+        while (taillocations.contains(foodlocation)) {
+          foodlocation = random.nextInt(spots);
+        }
+        if (millisecondsPerMovement> 200) millisecondsPerMovement-=10;
+        setSpeed();
+      }
+    });
   }
 
   double getY(int _location) {
@@ -144,11 +191,17 @@ class _GameState extends State<Game> {
                   piecesize: piecesize,
                   isSnake: true,),
 
-                Ball(x: getX(foodlocation),
+                AnimatedApple(
+                  radius: piecesize/4,
+                  x: getX(foodlocation),
+                  y: getY(foodlocation),
+                  piecesize: piecesize,
+                ),
+              /*  Ball(x: getX(foodlocation),
                   y: getY(foodlocation),
                   piecesize: piecesize,
                   isSnake: false,),
-
+*/
               ]
                 ..addAll(
                     List.generate(taillength, (index) {
@@ -191,3 +244,5 @@ enum SnakeDirection {
   left,
   right
 }
+
+

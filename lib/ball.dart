@@ -1,6 +1,8 @@
-import 'dart:math';
+import 'dart:math' as math;
+
 
 import 'package:flutter/material.dart';
+import 'package:snake_game_f/point.dart';
 
 class Ball extends StatelessWidget {
   final double x;
@@ -8,19 +10,19 @@ class Ball extends StatelessWidget {
   final double piecesize;
   final bool isSnake;
 
-  const Ball({Key key, this.x, this.y, this.piecesize, this.isSnake})
+  const Ball({Key key, this.x, this.y, this.piecesize, this.isSnake = true})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return new Positioned(
-        top: y,
-        left: x,
+        top: y*piecesize,
+        left: x*piecesize,
         child: Container(
           height: piecesize,
           width: piecesize,
           decoration: BoxDecoration(
-              color: isSnake ? Colors.blue : Colors.red,
+              color: Colors.blue,
               shape: BoxShape.circle
           ),
         )
@@ -30,13 +32,13 @@ class Ball extends StatelessWidget {
 
 
 class AnimatedApple extends StatefulWidget {
-  final double radius;
   final double x;
   final double y;
   final double piecesize;
+  //final Function onAppleExpired;
 
 
-  const AnimatedApple({Key key, this.radius, this.x, this.y, this.piecesize}) : super(key: key);
+  const AnimatedApple({Key key, this.x, this.y, this.piecesize, }) : super(key: key);
   
   @override
   _AnimatedAppleState createState() => new _AnimatedAppleState();
@@ -45,18 +47,23 @@ class AnimatedApple extends StatefulWidget {
 class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateMixin {
 
   AnimationController _animationController;
+  double x ;
+  double y;
+
 
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: Duration(seconds: 10))
+     x = widget.x;
+    y = widget.y;
+    _animationController = AnimationController(vsync: this, duration: Duration(seconds: 5))
       ..addListener((){
         setState(() {
-
         });
       })
     ..forward();
+
   }
 
 
@@ -66,11 +73,22 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
     super.dispose();
   }
 
+  void onAppleExpired(){
+    setState(() {
+      _animationController.reset();
+      _animationController.forward();
+    });
+
+  }
+
   @override
   void didUpdateWidget(AnimatedApple oldWidget) {
     // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
+
     if (oldWidget.x != widget.x || oldWidget.y != widget.y) {
+      y = widget.y;
+      x = widget.x;
       _animationController.reset();
       _animationController.forward();
     }
@@ -80,8 +98,8 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return new  Positioned(
-        top: widget.y,
-        left: widget.x,
+        top: y *widget.piecesize,
+        left: x * widget.piecesize,
         child: Container(
         height: widget.piecesize,
         width: widget.piecesize,
@@ -90,9 +108,9 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
           animation: _animationController,
           child: CustomPaint(
             painter: ActivationPainter(
-              radius: widget.radius,
-              startAngle: -pi/2,
-              endAngle : (3*pi / 2)*(1-_animationController.value),
+              radius: widget.piecesize/4,
+              startAngle: 0.0,
+              endAngle : 2*math.pi *(1-_animationController.value),
               color: Colors.red,
             ),
           ),
@@ -133,7 +151,7 @@ class ActivationPainter extends CustomPainter {
         radius * 2,
       ),
       startAngle,
-      endAngle - startAngle, //sweepAngle,
+      endAngle ,//- startAngle, //sweepAngle,
       false, //useCenter,
       activationPaint,
     );

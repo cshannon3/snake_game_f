@@ -21,7 +21,7 @@ class GameController extends ChangeNotifier {
   bool turn = false;
 
   Timer timer;
-  Stopwatch stopwatch = Stopwatch();  //bool _activegame = true;
+  Stopwatch stopwatch = Stopwatch();
   GameState _gameState = GameState.startscreen;
   int ticksBeforeAppleDissapears;
   int _millisecondsPerMovement = 500;
@@ -33,7 +33,7 @@ class GameController extends ChangeNotifier {
   void dispose() {
     super.dispose();
     timer?.cancel();
-  } //bool spedup= false;
+  }
 
 
   /*
@@ -59,7 +59,6 @@ class GameController extends ChangeNotifier {
 
   Point get applePosition => _applePosition;
 
- // bool get activegame => _activegame;
 
   int get snakelength => _snakePiecePositions.length;
 
@@ -69,21 +68,13 @@ class GameController extends ChangeNotifier {
 
  int get secondsBeforeAppleDissapears => _secondsBeforeAppleDissapears;
 
-  // List<Point> get initialSnakePosition => [
-  // Point(rows/2.floorToDouble(),columns/2.floorToDouble())];
 
   /*
 
   EXTERNAL
 
    */
-  startTimer() {
-    timer?.cancel(); // cancel old timer if it exists
-    timer = Timer.periodic(
-        Duration(milliseconds: _millisecondsPerMovement), (Timer timer) {
-      tickUpdate();
-    });
-  }
+
 
 
   void initiateGame(){
@@ -95,22 +86,13 @@ class GameController extends ChangeNotifier {
     if(_gameState == GameState.active) startTimer();
   }
 
-  void changeDirection(Offset _tapPosition){
-    if (!turn) {
-      final currentHeadPos = _snakePiecePositions.first;
-      turn = true;
-      (snakeDirection == SnakeDirection.down ||
-          snakeDirection == SnakeDirection.up)
-          ? (_tapPosition.dx > (currentHeadPos.x*piecesize))
-          ? snakeDirection = SnakeDirection.right
-          : snakeDirection = SnakeDirection.left
-          : (_tapPosition.dy > (currentHeadPos.y*piecesize))
-          ? snakeDirection = SnakeDirection.down
-          : snakeDirection = SnakeDirection.up;
-    }
-    notifyListeners();
+  startTimer() {
+    timer?.cancel(); // cancel old timer if it exists
+    timer = Timer.periodic(
+        Duration(milliseconds: _millisecondsPerMovement), (Timer timer) {
+      tickUpdate();
+    });
   }
-
 
   void tickUpdate() {
     _move();
@@ -140,6 +122,22 @@ class GameController extends ChangeNotifier {
 
   }
 
+
+  void changeDirection(Offset _tapPosition){
+    if (!turn) {
+      final currentHeadPos = _snakePiecePositions.first;
+      turn = true;
+      (snakeDirection == SnakeDirection.down ||
+          snakeDirection == SnakeDirection.up)
+          ? (_tapPosition.dx > (currentHeadPos.x*piecesize))
+          ? snakeDirection = SnakeDirection.right
+          : snakeDirection = SnakeDirection.left
+          : (_tapPosition.dy > (currentHeadPos.y*piecesize))
+          ? snakeDirection = SnakeDirection.down
+          : snakeDirection = SnakeDirection.up;
+    }
+    notifyListeners();
+  }
 
   /*
 
@@ -189,7 +187,6 @@ class GameController extends ChangeNotifier {
 
   void _generateFirstSnakePosition() {
     _snakePiecePositions?.clear();
-
     final midPoint = columns/ 2;
     _snakePiecePositions = [
       Point(rows/2.floorToDouble(), midPoint.floorToDouble()),
@@ -225,13 +222,12 @@ class GameController extends ChangeNotifier {
   bool _isWallCollision() {
     var currentHeadPos = _snakePiecePositions.first;
 
-    if (currentHeadPos.x < 0 ||
+    return (currentHeadPos.x < 0 ||
         currentHeadPos.y < 0 ||
         currentHeadPos.x > columns-1 ||
-        currentHeadPos.y > rows-1) {
-      return true;
-    }
-    return false;
+        currentHeadPos.y > rows-1)
+        ? true
+        :false;
   }
 
   bool _isAppleCollision() {

@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:snake_game_f/Controllers/gamecontroller.dart';
 import 'package:snake_game_f/Screens/game.dart';
@@ -20,8 +17,8 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard> {
 
   GameState gameState = GameState.startscreen;
-  double verticalpadding;
-  double horizontalpadding;
+  double verticalpadding, horizontalpadding;
+
   int rows, columns, spots;
   double piecesize;
 
@@ -39,55 +36,27 @@ class _GameBoardState extends State<GameBoard> {
     gameController = GameController(rows, columns, piecesize)
       ..addListener(() {
         setState(() {
-         // if (gameState != gameController.gameState) {
             gameState = gameController.gameState;
-        //  }
         });
       });
-    //..initiateGame();
-  }
-
-
-  void onChangeGameState(GameState _gamestate) {
-
-      /*if (_gamestate == GameState.active) {
-        gameController.initiateGame();
-        gameController.startTimer();
-
-      }*/
-
-        gameController.gameState = _gamestate;
-
 
   }
-
-
-  void _changeDirectionBasedOnTap(TapDownDetails details) {
-    final RenderBox referenceBox = context.findRenderObject();
-    Offset _tapPosition = referenceBox.globalToLocal(details.globalPosition);
-    gameController.changeDirection(_tapPosition);
-  }
-
 
   Widget _buildScreen() {
     Widget _currentScreen;
     switch (gameState) {
       case GameState.startscreen:
-        _currentScreen = StartScreen(onChangeGameState: (game) {
-          onChangeGameState(game);
+        _currentScreen = StartScreen(onChangeGameState: (_game) {
+          gameController.gameState = _game;
         });
         break;
       case GameState.active:
-        _currentScreen = GestureDetector(
-            onTapDown: _changeDirectionBasedOnTap,
-            child: Game(gameController: gameController)
-        );
+        _currentScreen = Game(gameController: gameController);
         break;
       case GameState.gameover:
-        _currentScreen = GameOverScreen(onChangeGameState: (game) {
-          onChangeGameState(game);
+        _currentScreen = GameOverScreen(onChangeGameState: (_game) {
+          gameController.gameState = _game;
         });
-
         break;
     }
     return _currentScreen;
@@ -104,11 +73,4 @@ class _GameBoardState extends State<GameBoard> {
       ),
     );
   }
-}
-
-enum SnakeDirection {
-  up,
-  down,
-  left,
-  right
 }

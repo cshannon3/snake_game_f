@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:snake_game_f/game.dart';
-import 'package:snake_game_f/gameoverscreen.dart';
+import 'package:snake_game_f/Controllers/gamecontroller.dart';
+import 'package:snake_game_f/Screens/game.dart';
+import 'package:snake_game_f/Screens/gameoverscreen.dart';
 import 'package:snake_game_f/shared.dart';
-import 'package:snake_game_f/startscreen.dart';
+import 'package:snake_game_f/Screens/startscreen.dart';
 
 class GameBoard extends StatefulWidget {
   final Size boardsize;
@@ -23,8 +24,8 @@ class _GameBoardState extends State<GameBoard> {
   double horizontalpadding;
   int rows, columns, spots;
   double piecesize;
-  //Widget currentScreen;
 
+  GameController gameController;
 
   @override
   void initState() {
@@ -35,26 +36,58 @@ class _GameBoardState extends State<GameBoard> {
     rows = (widget.boardsize.height/widget.piecesize).floor();
     columns =(widget.boardsize.width/widget.piecesize).floor();
 
+    gameController = GameController(rows, columns, piecesize)
+      ..addListener(() {
+        setState(() {
+         // if (gameState != gameController.gameState) {
+            gameState = gameController.gameState;
+        //  }
+        });
+      });
+    //..initiateGame();
   }
+
 
   void onChangeGameState(GameState _gamestate) {
-    gameState = _gamestate;
-    setState(() {
 
-    });
+      /*if (_gamestate == GameState.active) {
+        gameController.initiateGame();
+        gameController.startTimer();
+
+      }*/
+
+        gameController.gameState = _gamestate;
+
+
   }
+
+
+  void _changeDirectionBasedOnTap(TapDownDetails details) {
+    final RenderBox referenceBox = context.findRenderObject();
+    Offset _tapPosition = referenceBox.globalToLocal(details.globalPosition);
+    gameController.changeDirection(_tapPosition);
+  }
+
 
   Widget _buildScreen() {
     Widget _currentScreen;
     switch (gameState) {
       case GameState.startscreen:
-        _currentScreen = StartScreen(onChangeGameState: (game) {onChangeGameState(game);});
+        _currentScreen = StartScreen(onChangeGameState: (game) {
+          onChangeGameState(game);
+        });
         break;
       case GameState.active:
-        _currentScreen = Game(rows: rows,columns: columns,piecesize: piecesize,onChangeGameState: (game) {onChangeGameState(game);});
+        _currentScreen = GestureDetector(
+            onTapDown: _changeDirectionBasedOnTap,
+            child: Game(gameController: gameController)
+        );
         break;
       case GameState.gameover:
-        _currentScreen = GameOverScreen(onChangeGameState: (game) {onChangeGameState(game);});
+        _currentScreen = GameOverScreen(onChangeGameState: (game) {
+          onChangeGameState(game);
+        });
+
         break;
     }
     return _currentScreen;

@@ -119,7 +119,7 @@ class ActivationPainter extends CustomPainter {
         radius * 2,
         radius * 2,
       ),
-      startAngle,
+      0.0,
       endAngle ,//- startAngle, //sweepAngle,
       false, //useCenter,
       activationPaint,

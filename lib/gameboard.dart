@@ -36,6 +36,7 @@ class _GameBoardState extends State<GameBoard> {
     gameController = GameController(rows, columns, piecesize)
       ..addListener(() {
         setState(() {
+          print(gameState);
             gameState = gameController.gameState;
         });
       });

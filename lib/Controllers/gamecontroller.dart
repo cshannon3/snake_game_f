@@ -99,6 +99,7 @@ class GameController extends ChangeNotifier {
 
     if (_isWallCollision()) {
       _gameState = GameState.gameover;
+      timer?.cancel();
       notifyListeners();
       return;
     }
@@ -106,6 +107,7 @@ class GameController extends ChangeNotifier {
     if (_isAppleCollision()) {
       if (_isBoardFilled()) {
         _gameState = GameState.gameover;
+        timer?.cancel();
         notifyListeners();
       } else {
         _generateNewApple();

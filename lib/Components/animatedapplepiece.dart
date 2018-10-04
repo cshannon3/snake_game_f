@@ -2,44 +2,20 @@ import 'dart:math' as math;
 
 
 import 'package:flutter/material.dart';
-import 'package:snake_game_f/point.dart';
-
-class Ball extends StatelessWidget {
-  final double x;
-  final double y;
-  final double piecesize;
-  final bool isSnake;
-
-  const Ball({Key key, this.x, this.y, this.piecesize, this.isSnake = true})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return new Positioned(
-        top: y*piecesize,
-        left: x*piecesize,
-        child: Container(
-          height: piecesize,
-          width: piecesize,
-          decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle
-          ),
-        )
-    );
-  }
-}
+import 'package:snake_game_f/Models/point.dart';
 
 
 class AnimatedApple extends StatefulWidget {
-  final double x;
-  final double y;
+  // final double x;
+  // final double y;
+  final Point position;
   final double piecesize;
+  final int secondsBeforeDissapears;
   //final Function onAppleExpired;
 
 
-  const AnimatedApple({Key key, this.x, this.y, this.piecesize, }) : super(key: key);
-  
+  const AnimatedApple({Key key, this.position, this.piecesize,this.secondsBeforeDissapears }) : super(key: key);
+
   @override
   _AnimatedAppleState createState() => new _AnimatedAppleState();
 }
@@ -47,22 +23,17 @@ class AnimatedApple extends StatefulWidget {
 class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateMixin {
 
   AnimationController _animationController;
-  double x ;
-  double y;
-
-
 
   @override
   void initState() {
     super.initState();
-     x = widget.x;
-    y = widget.y;
-    _animationController = AnimationController(vsync: this, duration: Duration(seconds: 5))
+
+    _animationController = AnimationController(vsync: this, duration: Duration(seconds: widget.secondsBeforeDissapears))
       ..addListener((){
         setState(() {
         });
       })
-    ..forward();
+      ..forward();
 
   }
 
@@ -86,38 +57,36 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
     // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.x != widget.x || oldWidget.y != widget.y) {
-      y = widget.y;
-      x = widget.x;
+    if (oldWidget.position  != widget.position) {
       _animationController.reset();
       _animationController.forward();
     }
   }
 
- 
+
   @override
   Widget build(BuildContext context) {
     return new  Positioned(
-        top: y *widget.piecesize,
-        left: x * widget.piecesize,
-        child: Container(
+      top: widget.position.y *widget.piecesize,
+      left: widget.position.x * widget.piecesize,
+      child: Container(
         height: widget.piecesize,
         width: widget.piecesize,
-      child: Center(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          child: CustomPaint(
-            painter: ActivationPainter(
-              radius: widget.piecesize/4,
-              startAngle: 0.0,
-              endAngle : 2*math.pi *(1-_animationController.value),
-              color: Colors.red,
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _animationController,
+            child: CustomPaint(
+              painter: ActivationPainter(
+                radius: widget.piecesize/4,
+                startAngle: 0.0,
+                endAngle : 2*math.pi *(1-_animationController.value),
+                color: Colors.red,
+              ),
             ),
+            builder: (context, child) =>  child,
           ),
-          builder: (context, child) =>  child,
         ),
       ),
-    ),
     );
   }
 }

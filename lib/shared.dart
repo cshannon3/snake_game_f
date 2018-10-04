@@ -3,3 +3,11 @@ enum GameState {
   startscreen,
   active,
 }
+
+
+enum SnakeDirection {
+  up,
+  down,
+  left,
+  right
+}

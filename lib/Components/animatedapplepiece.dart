@@ -1,17 +1,15 @@
 import 'dart:math' as math;
 
-
 import 'package:flutter/material.dart';
 import 'package:snake_game_f/Models/point.dart';
 
 
 class AnimatedApple extends StatefulWidget {
-  // final double x;
-  // final double y;
+
   final Point position;
   final double piecesize;
   final int secondsBeforeDissapears;
-  //final Function onAppleExpired;
+
 
 
   const AnimatedApple({Key key, this.position, this.piecesize,this.secondsBeforeDissapears }) : super(key: key);

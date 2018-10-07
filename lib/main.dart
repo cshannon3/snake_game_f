@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
 
 
 class MyHomePage extends StatelessWidget {
-  final Size boardsize = Size(350.0,550.0);
+  final Size boardsize = Size(400.0,550.0);
   final double piecesize = 30.0;
 
   @override

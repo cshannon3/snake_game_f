@@ -12,6 +12,7 @@ class GameController extends ChangeNotifier {
   final int rows, columns;
   final double piecesize;
 
+
   GameController(this.rows, this.columns, this.piecesize);
 
   // Position and direction variables
@@ -26,6 +27,7 @@ class GameController extends ChangeNotifier {
   int ticksBeforeAppleDissapears;
   int _millisecondsPerMovement = 500;
   int _secondsBeforeAppleDissapears = 10;
+  int _points = 0;
 
 
 
@@ -66,6 +68,8 @@ class GameController extends ChangeNotifier {
 
   double get piece => piecesize;
 
+  int get points => _points;
+
  int get secondsBeforeAppleDissapears => _secondsBeforeAppleDissapears;
 
 
@@ -79,6 +83,7 @@ class GameController extends ChangeNotifier {
 
   void initiateGame(){
     snakeDirection = SnakeDirection.down;
+    _points = 0;
     turn = false;
     _generateFirstSnakePosition();
     _generateNewApple();
@@ -110,6 +115,7 @@ class GameController extends ChangeNotifier {
         timer?.cancel();
         notifyListeners();
       } else {
+        _points+=1;
         _generateNewApple();
         _grow();
       }
@@ -123,8 +129,7 @@ class GameController extends ChangeNotifier {
     notifyListeners();
 
   }
-
-
+  
   void changeDirection(Offset _tapPosition){
     if (!turn) {
       final currentHeadPos = _snakePiecePositions.first;
@@ -139,6 +144,20 @@ class GameController extends ChangeNotifier {
           : snakeDirection = SnakeDirection.up;
     }
     notifyListeners();
+  }
+
+  void changeDirectionsWithController(SnakeDirection _newsnakeDirection){
+    if (!turn) {
+      turn = true;
+      snakeDirection = _newsnakeDirection;
+    }
+    notifyListeners();
+  }
+  bool isSnakeMovingVertically() {
+    return (snakeDirection == SnakeDirection.down ||
+        snakeDirection == SnakeDirection.up )
+    ?true
+    :false;
   }
 
   /*

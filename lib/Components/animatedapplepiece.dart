@@ -11,7 +11,6 @@ class AnimatedApple extends StatefulWidget {
   final int secondsBeforeDissapears;
 
 
-
   const AnimatedApple({Key key, this.position, this.piecesize,this.secondsBeforeDissapears }) : super(key: key);
 
   @override

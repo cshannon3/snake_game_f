@@ -11,14 +11,14 @@ class Game extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void _changeDirectionBasedOnTap(TapDownDetails details) {
+    /*void _changeDirectionBasedOnTap(TapDownDetails details) {
       final RenderBox referenceBox = context.findRenderObject();
       Offset _tapPosition = referenceBox.globalToLocal(details.globalPosition);
       gameController.changeDirection(_tapPosition);
-    }
-    return  GestureDetector(
+    }*/
+    return  /*GestureDetector(
         onTapDown: _changeDirectionBasedOnTap,
-        child: Container(
+        child:*/ Container(
             color: Colors.white,
             child: Stack(
               children: <Widget>[
@@ -31,15 +31,29 @@ class Game extends StatelessWidget {
                 ..addAll(
                     List.generate(gameController.snakelength, (index) {
                       return SnakePiece(
-                        position: gameController.getSnakePosition(index),
+                        position: gameController.getSnakePosition(index, 0),
                         piecesize: gameController.piecesize,
+                        snakeColor:Colors.blue,
                       );
+
+                    }
+
+                    )
+                )
+                ..addAll(
+                    List.generate(gameController.snakelength2, (index) {
+                      return SnakePiece(
+                        position: gameController.getSnakePosition(index, 1),
+                        piecesize: gameController.piecesize,
+                        snakeColor:Colors.orange,
+                      );
+
                     }
 
                     )
                 ),
             ),
-            )
+          //  )
     );
   }
 }

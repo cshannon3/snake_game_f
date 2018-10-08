@@ -8,9 +8,10 @@ class SnakePiece extends StatelessWidget {
 
   final Point position;
   final double piecesize;
-  final bool isSnake;
+  final Color snakeColor;
 
-  const SnakePiece({Key key, this.position, this.piecesize, this.isSnake = true})
+
+  const SnakePiece({Key key, this.position, this.piecesize, this.snakeColor})
       : super(key: key);
 
   @override
@@ -22,7 +23,7 @@ class SnakePiece extends StatelessWidget {
           height: piecesize,
           width: piecesize,
           decoration: BoxDecoration(
-              color: Colors.blue,
+              color: snakeColor,
               shape: BoxShape.circle
           ),
         )

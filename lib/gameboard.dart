@@ -114,26 +114,27 @@ class _GameBoardState extends State<GameBoard> {
               children: <Widget>[
                 UserController(
                   boxwidth: widget.boardsize.width/4,
-                  isActive: false,
+                  snakenumber:  2,
+                  snakeColor: Colors.pink,
                   gameController: gameController,
                 ),
                 UserController(
                   boxwidth: widget.boardsize.width/4,
                    snakenumber:  0,
-                  isActive: true,
-                  snakeColor: Colors.black,
+                  snakeColor: Colors.blue,
                   gameController: gameController,
                 ),
                 UserController(
                   boxwidth: widget.boardsize.width/4,
-                  // boxheight:  0.0,
-                  isActive: false,
+                  
+                  snakeColor: Colors.orange,
+                  snakenumber: 1,
                   gameController: gameController,
                 ),
                 UserController(
                   boxwidth: widget.boardsize.width/4,
-                  // boxheight:  0.0,
-                  isActive: false,
+                  snakenumber:  3,
+                  snakeColor: Colors.green,
                   gameController: gameController,
                 ),
 
@@ -171,24 +172,24 @@ class UserController extends StatelessWidget {
     final double boxheight = MediaQuery.of(context).size.height;
     return
 
-    isActive ? GestureDetector(
+    gameController.isSnakeActive(snakenumber) ? GestureDetector(
       onTapDown: (TapDownDetails details) {
         final RenderBox referenceBox = context.findRenderObject();
         Offset _tapPosition = referenceBox.globalToLocal(details.globalPosition);
        print("${_tapPosition}");
 
-         if (gameController.isSnakeMovingVertically()){
+         if (gameController.isSnakeMovingVertically(snakenumber)){
 
              gameController.changeDirectionsWithController(
                  (_tapPosition.dx< boxwidth/2)
                  ?SnakeDirection.left
-                  : SnakeDirection.right);
+                  : SnakeDirection.right, snakenumber);
 
          }else {
            gameController.changeDirectionsWithController(
                (_tapPosition.dy < boxwidth / 2)
                    ? SnakeDirection.up
-                   : SnakeDirection.down);
+                   : SnakeDirection.down, snakenumber);
          }
 
       },
@@ -199,7 +200,7 @@ class UserController extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top:30.0  ),
               child: Opacity(
-                opacity: gameController.isSnakeMovingVertically()? 1.0: .5,
+                opacity: gameController.isSnakeMovingVertically(snakenumber)? 1.0: .5,
                 child: Container(
                   width:boxwidth,
                   height: 40.0,
@@ -221,7 +222,7 @@ class UserController extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(left:30.0 ),
               child: Opacity(
-                  opacity: gameController.isSnakeMovingVertically()? .5: 1.0,
+                  opacity: gameController.isSnakeMovingVertically(snakenumber)? .5: 1.0,
                 child: Container(
                   width: 40.0,
                   height: boxwidth,

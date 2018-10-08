@@ -4,10 +4,11 @@ enum GameState {
   active,
 }
 
+enum SnakeDirection { up, down, left, right }
 
-enum SnakeDirection {
-  up,
-  down,
-  left,
-  right
+enum AppleType {
+  regularapple,
+  doubleapple,
+  slowdownapple,
+  splitapple,
 }

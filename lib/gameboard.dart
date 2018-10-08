@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:snake_game_f/Components/usercontroller.dart';
 import 'package:snake_game_f/Controllers/gamecontroller.dart';
+import 'package:snake_game_f/Models/snake.dart';
 import 'package:snake_game_f/Screens/game.dart';
 import 'package:snake_game_f/Screens/gameoverscreen.dart';
 import 'package:snake_game_f/shared.dart';
@@ -15,7 +17,6 @@ class GameBoard extends StatefulWidget {
 }
 
 class _GameBoardState extends State<GameBoard> {
-
   GameState gameState = GameState.startscreen;
   double verticalpadding, horizontalpadding;
 
@@ -28,18 +29,17 @@ class _GameBoardState extends State<GameBoard> {
   void initState() {
     super.initState();
     piecesize = widget.piecesize;
-    verticalpadding = (widget.boardsize.height%widget.piecesize)/2;
-    horizontalpadding = (widget.boardsize.width%widget.piecesize)/2;
-    rows = (widget.boardsize.height/widget.piecesize).floor();
-    columns =(widget.boardsize.width/widget.piecesize).floor();
+    verticalpadding = (widget.boardsize.height % widget.piecesize) / 2;
+    horizontalpadding = (widget.boardsize.width % widget.piecesize) / 2;
+    rows = (widget.boardsize.height / widget.piecesize).floor();
+    columns = (widget.boardsize.width / widget.piecesize).floor();
 
     gameController = GameController(rows, columns, piecesize)
       ..addListener(() {
         setState(() {
-            gameState = gameController.gameState;
+          gameState = gameController.gameState;
         });
       });
-
   }
 
   Widget _buildScreen() {
@@ -65,245 +65,60 @@ class _GameBoardState extends State<GameBoard> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-    Container(
-    width: widget.boardsize.width,
-      height: 60.0,
-      color: Colors.blue,
-      padding: EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Container(
-            width: widget.boardsize.width/4,
-            height: 50.0,
-            color: Colors.white,
-            child: Center(
-              child: Text("${gameController.points}"),
-            ),
-          ),
-          Container(
-            width: widget.boardsize.width/4,
-            height: 50.0,
-            color: Colors.white,
-          ),
-          Container(
-            width: widget.boardsize.width/4,
-            height: 50.0,
-            color: Colors.white,
-          ),
-
-        ],
-      ),
-    ),
-        ConstrainedBox(
-          constraints: BoxConstraints.tight(widget.boardsize),
-          child: Container(
-            color: Colors.grey[400],
-            padding: EdgeInsets.symmetric(vertical: verticalpadding, horizontal: horizontalpadding),
-            child: _buildScreen()
-          ),
-    ),
-        Expanded(
-          child: Container(
-            width:  widget.boardsize.width,
-            color: Colors.grey[400],
-
+            width: widget.boardsize.width,
+            height: 60.0,
+            color: Colors.blue,
+            padding: EdgeInsets.all(8.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                UserController(
-                  boxwidth: widget.boardsize.width/4,
-                  snakenumber:  2,
-                  snakeColor: Colors.pink,
-                  gameController: gameController,
+                Container(
+                  width: widget.boardsize.width / 4,
+                  height: 50.0,
+                  color: Colors.white,
+                  child: Center(
+                    child: Text("${gameController.points}"),
+                  ),
                 ),
-                UserController(
-                  boxwidth: widget.boardsize.width/4,
-                   snakenumber:  0,
-                  snakeColor: Colors.blue,
-                  gameController: gameController,
+                Container(
+                  width: widget.boardsize.width / 4,
+                  height: 50.0,
+                  color: Colors.white,
                 ),
-                UserController(
-                  boxwidth: widget.boardsize.width/4,
-                  
-                  snakeColor: Colors.orange,
-                  snakenumber: 1,
-                  gameController: gameController,
+                Container(
+                  width: widget.boardsize.width / 4,
+                  height: 50.0,
+                  color: Colors.white,
                 ),
-                UserController(
-                  boxwidth: widget.boardsize.width/4,
-                  snakenumber:  3,
-                  snakeColor: Colors.green,
-                  gameController: gameController,
-                ),
-
-
               ],
             ),
           ),
-
-        )
-    ]
-
-    );
-  }
-}
-
-
-class UserController extends StatelessWidget {
-
-  final double boxwidth;
-  final bool isActive;
-  final int snakenumber;
-  final Color snakeColor;
-  final GameController gameController;
-
-  const UserController({
-    this.isActive,
-    this.snakenumber,
-    this.boxwidth,
-    this.gameController,
-  this.snakeColor = Colors.grey});
-
-
-  @override
-  Widget build(BuildContext context) {
-    final double boxheight = MediaQuery.of(context).size.height;
-    return
-
-    gameController.isSnakeActive(snakenumber) ? GestureDetector(
-      onTapDown: (TapDownDetails details) {
-        final RenderBox referenceBox = context.findRenderObject();
-        Offset _tapPosition = referenceBox.globalToLocal(details.globalPosition);
-       print("${_tapPosition}");
-
-         if (gameController.isSnakeMovingVertically(snakenumber)){
-
-             gameController.changeDirectionsWithController(
-                 (_tapPosition.dx< boxwidth/2)
-                 ?SnakeDirection.left
-                  : SnakeDirection.right, snakenumber);
-
-         }else {
-           gameController.changeDirectionsWithController(
-               (_tapPosition.dy < boxwidth / 2)
-                   ? SnakeDirection.up
-                   : SnakeDirection.down, snakenumber);
-         }
-
-      },
-      child: Container(
-        color: snakeColor,
-        child: Stack(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(top:30.0  ),
-              child: Opacity(
-                opacity: gameController.isSnakeMovingVertically(snakenumber)? 1.0: .5,
-                child: Container(
-                  width:boxwidth,
-                  height: 40.0,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15.0)
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Icon(Icons.arrow_back, color: Colors.black,),
-                      Icon(Icons.arrow_forward,color: Colors.black,),
-
-                    ],
-                  ),
-                ),
-              ),
+          ConstrainedBox(
+            constraints: BoxConstraints.tight(widget.boardsize),
+            child: Container(
+                color: Colors.grey[400],
+                padding: EdgeInsets.symmetric(
+                    vertical: verticalpadding, horizontal: horizontalpadding),
+                child: _buildScreen()),
+          ),
+          Expanded(
+            child: Container(
+              width: widget.boardsize.width,
+              color: Colors.grey[400],
+              child: Row(
+                  children: List.generate(initsnake.length, (_snakenum) {
+                return UserController(
+                  boxwidth: widget.boardsize.width / 4,
+                  snakenumber: _snakenum,
+                  snakeColor: initsnake[_snakenum].snakeColor,
+                  gameController: gameController,
+                );
+              })),
             ),
-            Padding(
-              padding: EdgeInsets.only(left:30.0 ),
-              child: Opacity(
-                  opacity: gameController.isSnakeMovingVertically(snakenumber)? .5: 1.0,
-                child: Container(
-                  width: 40.0,
-                  height: boxwidth,
-
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15.0)
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Icon(Icons.arrow_upward, color: Colors.black,),
-                      Icon(Icons.arrow_downward,color: Colors.black,),
-
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    ): InactiveController(boxwidth: boxwidth,);
-  }
-}
-
-
-class InactiveController extends StatelessWidget {
-  final double boxwidth;
-
-  const InactiveController({Key key, this.boxwidth}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: .5,
-      child: new Container(
-          color: Colors.grey,
-          child: Stack(
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(top: 30.0),
-                  child: Container(
-                    width: boxwidth,
-                    height: 40.0,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15.0)
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Icon(Icons.arrow_back, color: Colors.black,),
-                        Icon(Icons.arrow_forward, color: Colors.black,),
-
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 30.0),
-                  child: Container(
-                    width: 40.0,
-                    height: boxwidth,
-
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15.0)
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Icon(Icons.arrow_upward, color: Colors.black,),
-                        Icon(Icons.arrow_downward, color: Colors.black,),
-
-                      ],
-                    ),
-                  ),
-                )
-              ]
           )
-      ),
-    );
+        ]);
   }
 }

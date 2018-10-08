@@ -1,39 +1,40 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:snake_game_f/Models/apple.dart';
 import 'package:snake_game_f/Models/point.dart';
 
-
 class AnimatedApple extends StatefulWidget {
-
-  final Point position;
+  //final Point position;
   final double piecesize;
   final int secondsBeforeDissapears;
+  //final Color appleColor;
+  final Apple apple;
 
-
-  const AnimatedApple({Key key, this.position, this.piecesize,this.secondsBeforeDissapears }) : super(key: key);
+  const AnimatedApple(
+      {Key key, this.piecesize, this.secondsBeforeDissapears, this.apple})
+      : super(key: key);
 
   @override
   _AnimatedAppleState createState() => new _AnimatedAppleState();
 }
 
-class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateMixin {
-
+class _AnimatedAppleState extends State<AnimatedApple>
+    with TickerProviderStateMixin {
   AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(vsync: this, duration: Duration(seconds: widget.secondsBeforeDissapears))
-      ..addListener((){
-        setState(() {
-        });
+    _animationController = AnimationController(
+        vsync: this,
+        duration: Duration(seconds: widget.secondsBeforeDissapears))
+      ..addListener(() {
+        setState(() {});
       })
       ..forward();
-
   }
-
 
   @override
   void dispose() {
@@ -41,12 +42,11 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
     super.dispose();
   }
 
-  void onAppleExpired(){
+  void onAppleExpired() {
     setState(() {
       _animationController.reset();
       _animationController.forward();
     });
-
   }
 
   @override
@@ -54,18 +54,17 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
     // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.position  != widget.position) {
+    if (oldWidget.apple.appleLocation != widget.apple.appleLocation) {
       _animationController.reset();
       _animationController.forward();
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return new  Positioned(
-      top: widget.position.y *widget.piecesize,
-      left: widget.position.x * widget.piecesize,
+    return new Positioned(
+      top: widget.apple.appleLocation.y * widget.piecesize,
+      left: widget.apple.appleLocation.x * widget.piecesize,
       child: Container(
         height: widget.piecesize,
         width: widget.piecesize,
@@ -74,20 +73,19 @@ class _AnimatedAppleState extends State<AnimatedApple> with TickerProviderStateM
             animation: _animationController,
             child: CustomPaint(
               painter: ActivationPainter(
-                radius: widget.piecesize/4,
+                radius: widget.piecesize / 4,
                 startAngle: 0.0,
-                endAngle : 2*math.pi *(1-_animationController.value),
-                color: Colors.red,
+                endAngle: 2 * math.pi * (1 - _animationController.value),
+                color: widget.apple.getAppleColor(),
               ),
             ),
-            builder: (context, child) =>  child,
+            builder: (context, child) => child,
           ),
         ),
       ),
     );
   }
 }
-
 
 class ActivationPainter extends CustomPainter {
   final double radius;
@@ -101,11 +99,11 @@ class ActivationPainter extends CustomPainter {
     this.color,
     this.startAngle,
     this.endAngle,
-  }): activationPaint = new Paint()
-    ..color = color
-    ..strokeWidth = radius*2
-    ..style = PaintingStyle.stroke
-    ..strokeCap = StrokeCap.butt;
+  }) : activationPaint = new Paint()
+          ..color = color
+          ..strokeWidth = radius * 2
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.butt;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -117,7 +115,7 @@ class ActivationPainter extends CustomPainter {
         radius * 2,
       ),
       0.0,
-      endAngle ,//- startAngle, //sweepAngle,
+      endAngle, //- startAngle, //sweepAngle,
       false, //useCenter,
       activationPaint,
     );
@@ -127,5 +125,4 @@ class ActivationPainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
-
 }

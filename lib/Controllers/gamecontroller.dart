@@ -1,271 +1,239 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:snake_game_f/Models/apple.dart';
 import 'package:snake_game_f/Models/point.dart';
+import 'package:snake_game_f/Models/snake.dart';
 import 'package:snake_game_f/shared.dart';
 import 'dart:math' as math;
 
-
 class GameController extends ChangeNotifier {
-
   final int rows, columns;
   final double piecesize;
 
-
   GameController(this.rows, this.columns, this.piecesize);
 
-  // Position and direction variables
-  //var _snakePiecePositions;
-  Point _applePosition;
- // SnakeDirection snakeDirection= SnakeDirection.down;
-  //bool turn = false;
+  //Point _applePosition;
+  //Color _appleColor;
+  Apple _apple;
 
-  List<List<Point>> _snakePiecePositions=[[
-    Point(0.0,0.0),
-  ],[
-    Point(0.0,0.0),
-  ]];
-  List<SnakeDirection> snakeDirections = [SnakeDirection.down,SnakeDirection.down];
-  List<bool> turnstatuses = [false,false];
+  List<Snake> _snakes = initsnake;
+  int snakesalive = 0;
 
   Timer timer;
   Stopwatch stopwatch = Stopwatch();
   GameState _gameState = GameState.startscreen;
+
   int ticksBeforeAppleDissapears;
   int _millisecondsPerMovement = 500;
   int _secondsBeforeAppleDissapears = 10;
   int _points = 0;
-
-
+  int _minMillisecondsPerMovement = 250;
 
   @override
   void dispose() {
     super.dispose();
     timer?.cancel();
   }
-/*GAMESTATE*/
-/*SNAKE*/
 
   /*
 
   GETTERS AND SETTERS
 
    */
-/*GAMESTATE*/
   GameState get gameState => _gameState;
 
   set gameState(GameState newgamestate) {
     _gameState = newgamestate;
-    if (_gameState==GameState.active){
-        initiateGame();
+    if (_gameState == GameState.active) {
+      initiateGame();
     }
     notifyListeners();
-
   }
 
-  Point getSnakePosition(int index, int snakenum){
-    return (isSnakeActive(snakenum))
-    ?_snakePiecePositions[snakenum][index]
-    : Point(0.0,0.0);
+  Point getSnakePosition(int index, int snakenum) {
+    return _snakes[snakenum].getSnakePosition(index);
   }
 
-  Point get applePosition => _applePosition;
+  Point get applePosition => _apple.appleLocation;
+  Color get appleColor => _apple.getAppleColor();
+  Apple get apple => _apple;
 
+  int get secondsBeforeAppleDissapears => _secondsBeforeAppleDissapears;
 
-  int get snakelength => (_snakePiecePositions.isNotEmpty)?_snakePiecePositions.first.length: 0;
+  int get inittick =>
+      (_secondsBeforeAppleDissapears * 1000 / _millisecondsPerMovement).floor();
 
-  int get snakelength2 => (_snakePiecePositions.isNotEmpty)?_snakePiecePositions.last.length: 0;
-
-  int get inittick =>(_secondsBeforeAppleDissapears*1000/_millisecondsPerMovement).floor();
+  ///
+  List<Snake> get snakes => _snakes;
 
   double get piece => piecesize;
 
   int get points => _points;
 
- int get secondsBeforeAppleDissapears => _secondsBeforeAppleDissapears;
+  bool isSnakeMovingVertically(int _snakenum) {
+    return _snakes[_snakenum].isSnakeMovingVertically();
+  }
 
+  bool isSnakeActive(int _snakenum) {
+    return _snakes[_snakenum].isAlive;
+  }
 
+  int getsnakelength(int _snakenum) {
+    return _snakes[_snakenum].getSnakeLength();
+  }
   /*
 
   EXTERNAL
 
    */
 
-
-  void initiateGame(){
-    snakeDirections = [SnakeDirection.down, SnakeDirection.down];
-    turnstatuses = [false, false];
-
-   // snakeDirection = SnakeDirection.down;
+  void initiateGame() {
     _points = 0;
-   // turn = false;
-    _generateFirstSnakePosition();
+    _snakes[1].activateSnake(
+        [Point((rows / 2).floorToDouble(), (columns / 2).floorToDouble())],
+        SnakeDirection.down);
+    _snakes[2].activateSnake([
+      Point((rows / 2).floorToDouble() + 2, (columns / 2).floorToDouble() + 2)
+    ], SnakeDirection.down);
+    snakesalive = 2;
+    //TODO
     _generateNewApple();
     notifyListeners();
-    if(_gameState == GameState.active) startTimer();
+    if (_gameState == GameState.active) startTimer();
   }
 
   startTimer() {
     timer?.cancel(); // cancel old timer if it exists
-    timer = Timer.periodic(
-        Duration(milliseconds: _millisecondsPerMovement), (Timer timer) {
+    timer = Timer.periodic(Duration(milliseconds: _millisecondsPerMovement),
+        (Timer timer) {
       tickUpdate();
     });
   }
 
   void tickUpdate() {
-
-    int _snakenum = 0;
-   List<List<Point>> _newsnakes= [];
-   List<SnakeDirection> _newdirections = [];
-
-    _snakePiecePositions.forEach((_snake) {
-      List<Point> newsnake = _snake;
-      newsnake.insert(0, _getNewHead(newsnake.first,snakeDirections[_snakenum] ));
-      newsnake.removeLast();
-      turnstatuses[_snakenum]= false;
-
-      if(_isStillInPlay(newsnake.first)){
-        _newdirections.add(snakeDirections[_snakenum]);
-        if(_isAppleCollision(newsnake.first)) {
-          _points += 1;
-          _generateNewApple();
-          newsnake.insert(_snakenum, _getNewHead(newsnake.first,snakeDirections[_snakenum] ));
-
+    _snakes.forEach((_snake) {
+      if (_snake.isAlive) {
+        _snake.getNewHead();
+        _snake.snakelocations.removeLast();
+        _snake.turnstatus = false;
+        if (_isStillInPlay(_snake.getHead())) {
+          if (_isAppleCollision(_snake.getHead())) {
+            switch (_apple.appleType) {
+              case (AppleType.regularapple):
+                _points += 1;
+                _generateNewApple();
+                notifyListeners();
+                break;
+              case (AppleType.doubleapple):
+                _points += 2;
+                if (_millisecondsPerMovement > _minMillisecondsPerMovement) {
+                  _millisecondsPerMovement -= 50;
+                  _generateNewApple();
+                  notifyListeners();
+                  startTimer();
+                }
+                // increase speed
+                break;
+              case (AppleType.slowdownapple):
+                _millisecondsPerMovement += 50;
+                _generateNewApple();
+                notifyListeners();
+                startTimer();
+                // decreaseSpeed
+                break;
+              case (AppleType.splitapple):
+                if (snakesalive < _snakes.length &&
+                    _snake.snakelocations.length > 1) {
+                  int newsnakenum = _snakes.indexWhere((_s) => !_s.isAlive);
+                  _snakes[newsnakenum].activateSnake(
+                      _snake.snakelocations.sublist(
+                          (_snake.getSnakeLength() / 2).ceil(),
+                          _snake.getSnakeLength()),
+                      _snake.currentdirection);
+                  _snake.snakelocations = _snake.snakelocations
+                      .sublist(0, (_snake.getSnakeLength() / 2).floor());
+                  snakesalive += 1;
+                }
+                _generateNewApple();
+                notifyListeners();
+                break;
+              default:
+                break;
+            }
+            //_points += _apple.getPoints();
+            //TODO
+            // if(_apple.appleType == )
+            // _generateNewApple();
+            _snake.getNewHead();
+          }
+        } else {
+          _snake.deactivateSnake();
+          snakesalive -= 1;
+          if (snakesalive == 0) {
+            _gameState = GameState.gameover;
+            timer?.cancel();
+            notifyListeners();
+          }
         }
-        _newsnakes.add(newsnake);
-      } else
-         {
-         if (_snakePiecePositions.length ==1) {
-           _gameState = GameState.gameover;
-           timer?.cancel();
-           notifyListeners();
-         }
       }
-      _snakenum+=1;
-
     });
-    snakeDirections = _newdirections;
+    if (ticksBeforeAppleDissapears == 0) _generateNewApple();
 
-    _snakePiecePositions = _newsnakes;
+    ticksBeforeAppleDissapears -= 1;
+
     notifyListeners();
-
-      if (ticksBeforeAppleDissapears == 0 ) _generateNewApple();
-
-      ticksBeforeAppleDissapears -=1;
-      notifyListeners();
-
   }
 
-  void changeDirectionsWithController(SnakeDirection _newsnakeDirection, int _snakenum){
-    if (!turnstatuses[_snakenum]) {
-      turnstatuses[_snakenum]= true;
-      snakeDirections[_snakenum] = _newsnakeDirection;
+  void changeDirectionsWithController(
+      SnakeDirection _newsnakeDirection, int _snakenum) {
+    if (!_snakes[_snakenum].turnstatus) {
+      _snakes[_snakenum].turnstatus = true;
+      _snakes[_snakenum].currentdirection = _newsnakeDirection;
     }
     notifyListeners();
-  }
-
-  bool isSnakeMovingVertically(int snakenum) {
-
-    return (snakeDirections[snakenum] == SnakeDirection.down ||
-        snakeDirections[snakenum] == SnakeDirection.up )
-    ?true
-    :false;
-  }
-  bool isSnakeActive(int snakenum) {
-    return (_snakePiecePositions.length > snakenum)
-        ? true
-        : false;
   }
 
   /*
 
   INTERNAL
-
-  */
-
-
-  Point _getNewHead(Point currentHeadPos, SnakeDirection currentdirection){
-    var newHeadPos;
-    switch (currentdirection) {
-      case SnakeDirection.down:
-        newHeadPos = Point(currentHeadPos.x, currentHeadPos.y + 1);
-        break;
-      case SnakeDirection.up:
-        newHeadPos = Point(currentHeadPos.x, currentHeadPos.y - 1);
-        break;
-      case SnakeDirection.right:
-        newHeadPos = Point(currentHeadPos.x + 1, currentHeadPos.y);
-        break;
-      case SnakeDirection.left:
-        newHeadPos = Point(currentHeadPos.x - 1, currentHeadPos.y);
-        break;
-    }
-    return newHeadPos;
-  }
-
-
-  void _generateFirstSnakePosition() {
-    _snakePiecePositions?.clear();
-    final midPoint = columns/ 2;
-    _snakePiecePositions =[[
-      Point(rows/2.floorToDouble(), midPoint.floorToDouble()),
-    ],[
-      Point(rows/2.floorToDouble()-3, midPoint.floorToDouble()-2),
-    ]] ;
-    snakeDirections = [SnakeDirection.down, SnakeDirection.down];
-    turnstatuses = [false, false];
-
-    notifyListeners();
-  }
-
+*/
+//TODO
   void _generateNewApple() {
     math.Random rng = math.Random();
-    var nextX = rng.nextInt(columns);
-    var nextY = rng.nextInt(rows);
-    var newApple = Point(nextX.toDouble(), nextY.toDouble());
-    if (_snakePiecePositions.first.contains(newApple)) {
+    Point newApple =
+        Point(rng.nextInt(columns).toDouble(), rng.nextInt(rows).toDouble());
+    if (_snakes.any((_snake) => _snake.containsNewApple(newApple))) {
       _generateNewApple();
     } else {
-      _applePosition = newApple;
+      var nextAppleType = rng.nextInt(AppleType.values.length);
+      _apple = Apple(newApple, AppleType.values[nextAppleType]);
       ticksBeforeAppleDissapears = inittick;
-
+      // }
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-
-
   /*
-
   POSITION CHECKS
-
 */
   bool _isStillInPlay(Point currentHeadPos) {
     return (currentHeadPos.x > -1 &&
-        currentHeadPos.y > -1 &&
-        currentHeadPos.x < columns &&
-        currentHeadPos.y < rows)
-   ? true
-        :false;
+            currentHeadPos.y > -1 &&
+            currentHeadPos.x < columns &&
+            currentHeadPos.y < rows)
+        ? true
+        : false;
   }
 
+  // TODO
   bool _isAppleCollision(Point currentHeadPos) {
-
-    return (currentHeadPos.x == _applePosition.x &&
-        currentHeadPos.y == _applePosition.y)
-        ? true
-        : false;
-
-  }
-
-  bool _isBoardFilled() {
-    return (rows*columns == snakelength)
+    return (currentHeadPos.x == _apple.appleLocation.x &&
+            currentHeadPos.y == _apple.appleLocation.y)
         ? true
         : false;
   }
-
-
+  /*bool _isBoardFilled() {
+    return (rows * columns == snakelength) ? true : false;
+  }*/
 }
-
